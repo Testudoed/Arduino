@@ -19,15 +19,20 @@
   Modified 2012 by Todd Krein (todd@krein.org) to implement repeated starts
 */
 
+/*
+* 4/29/2014 KAR - Modified Arduino Wire library to work with non-Arduino supported AVRs
+*/
+
 #ifndef TwoWire_h
 #define TwoWire_h
 
+#include <stddef.h>
 #include <inttypes.h>
-#include "Stream.h"
+//#include "Stream.h"
 
 #define BUFFER_LENGTH 32
 
-class TwoWire : public Stream
+class TwoWire //: public Stream
 {
   private:
     static uint8_t rxBuffer[];
@@ -46,9 +51,9 @@ class TwoWire : public Stream
     static void onReceiveService(uint8_t*, int);
   public:
     TwoWire();
-    void begin();
-    void begin(uint8_t);
-    void begin(int);
+    void begin(uint32_t sysClk = 0, uint32_t busFreq = 0);
+    void begin(uint8_t, uint32_t sysClk = 0, uint32_t busFreq = 0);
+    void begin(int, uint32_t sysClk = 0, uint32_t busFreq = 0);
     void beginTransmission(uint8_t);
     void beginTransmission(int);
     uint8_t endTransmission(void);
@@ -70,7 +75,7 @@ class TwoWire : public Stream
     inline size_t write(long n) { return write((uint8_t)n); }
     inline size_t write(unsigned int n) { return write((uint8_t)n); }
     inline size_t write(int n) { return write((uint8_t)n); }
-    using Print::write;
+    //using Print::write;
 };
 
 extern TwoWire Wire;

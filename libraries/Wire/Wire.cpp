@@ -19,6 +19,10 @@
   Modified 2012 by Todd Krein (todd@krein.org) to implement repeated starts
 */
 
+/*
+* 4/29/2014 KAR - Modified Arduino Wire library to work with non-Arduino supported AVRs
+*/
+
 extern "C" {
   #include <stdlib.h>
   #include <string.h>
@@ -51,28 +55,36 @@ TwoWire::TwoWire()
 
 // Public Methods //////////////////////////////////////////////////////////////
 
-void TwoWire::begin(void)
+void TwoWire::begin(uint32_t sysClk, uint32_t busFreq)
 {
   rxBufferIndex = 0;
   rxBufferLength = 0;
 
   txBufferIndex = 0;
   txBufferLength = 0;
+  
+  if(sysClk == 0){
+	sysClk = 1000000;
+  }
+  
+  if(busFreq == 0){
+	  busFreq = 100000;
+  }
 
-  twi_init();
+  twi_init(sysClk, busFreq);
 }
 
-void TwoWire::begin(uint8_t address)
+void TwoWire::begin(uint8_t address, uint32_t sysClk, uint32_t busFreq)
 {
   twi_setAddress(address);
   twi_attachSlaveTxEvent(onRequestService);
   twi_attachSlaveRxEvent(onReceiveService);
-  begin();
+  begin(sysClk, busFreq);
 }
 
-void TwoWire::begin(int address)
+void TwoWire::begin(int address, uint32_t sysClk, uint32_t busFreq)
 {
-  begin((uint8_t)address);
+  begin((uint8_t)address, sysClk, busFreq);
 }
 
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop)
@@ -163,7 +175,7 @@ size_t TwoWire::write(uint8_t data)
   // in master transmitter mode
     // don't bother if buffer is full
     if(txBufferLength >= BUFFER_LENGTH){
-      setWriteError();
+      //setWriteError();
       return 0;
     }
     // put byte in tx buffer

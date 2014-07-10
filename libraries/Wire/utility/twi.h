@@ -17,6 +17,10 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/*
+* 4/29/2014 KAR - Modified Arduino Wire library to work with non-Arduino supported AVRs
+*/
+
 #ifndef twi_h
 #define twi_h
 
@@ -38,7 +42,7 @@
   #define TWI_SRX   3
   #define TWI_STX   4
   
-  void twi_init(void);
+  void twi_init(uint32_t, uint32_t);
   void twi_setAddress(uint8_t);
   uint8_t twi_readFrom(uint8_t, uint8_t*, uint8_t, uint8_t);
   uint8_t twi_writeTo(uint8_t, uint8_t*, uint8_t, uint8_t, uint8_t);

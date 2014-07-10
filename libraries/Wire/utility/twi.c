@@ -19,13 +19,16 @@
   Modified 2012 by Todd Krein (todd@krein.org) to implement repeated starts
 */
 
+/*
+* 4/29/2014 KAR - Modified Arduino Wire library to work with non-Arduino supported AVRs
+*/
+
 #include <math.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <compat/twi.h>
-#include "Arduino.h" // for digitalWrite
 
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
@@ -35,8 +38,11 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
 
-#include "pins_arduino.h"
+#include "twi_pins.h"
 #include "twi.h"
+
+#define true 1
+#define false 0
 
 static volatile uint8_t twi_state;
 static volatile uint8_t twi_slarw;
@@ -65,7 +71,7 @@ static volatile uint8_t twi_error;
  * Input    none
  * Output   none
  */
-void twi_init(void)
+void twi_init(uint32_t sysClk, uint32_t busFreq)
 {
   // initialize state
   twi_state = TWI_READY;
@@ -73,13 +79,15 @@ void twi_init(void)
   twi_inRepStart = false;
   
   // activate internal pullups for twi.
-  digitalWrite(SDA, 1);
-  digitalWrite(SCL, 1);
+  //digitalWrite(SDA, 1);
+  //digitalWrite(SCL, 1);
+  //SCL_REG |= (1 << SCL);
+  //SDA_REG |= (1 << SDA);
 
   // initialize twi prescaler and bit rate
   cbi(TWSR, TWPS0);
   cbi(TWSR, TWPS1);
-  TWBR = ((F_CPU / TWI_FREQ) - 16) / 2;
+  TWBR = ((sysClk / busFreq) - 16) / 2;
 
   /* twi bit rate formula from atmega128 manual pg 204
   SCL Frequency = CPU Clock Frequency / (16 + (2 * TWBR))
